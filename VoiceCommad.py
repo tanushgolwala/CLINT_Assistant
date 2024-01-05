@@ -3,10 +3,13 @@ import wikipedia
 import speech_recognition as sr
 from AppOpener import open
 import webbrowser
+from Speaker import Speak
+import requests
+from bs4 import BeautifulSoup
 
-voice = pyttsx3.init('sapi5')
-voices = voice.getProperty('voices')
-voice.setProperty('voice',voices[0].id)
+# voice = pyttsx3.init('sapi5')
+# voices = voice.getProperty('voices')
+# voice.setProperty('voice',voices[0].id)
 # query = str(input("Enter your command: "))
 # result = wikipedia.summary(query, sentences=5)
 # print(result)
@@ -26,8 +29,8 @@ def takeCommand():
         query = r.recognize_google(audio, language='en-in')
         print(f"User said: {query}\n")
         q_lower = query.lower()
-        Decider(query,q_lower)
-                  
+        Decide(query,q_lower)
+
 
     except Exception as e:
         print("Say that again please...")
@@ -37,10 +40,9 @@ def Wikisearch(search):
     # search = takeCommand()
     say = wikipedia.summary(search, sentences=3)
     print(say)
-    voice.say(say)
-    voice.runAndWait()
+    Speak(say)
     
-def Decider(query,q_lower):
+def Decide(query,q_lower):
     if 'what is' in q_lower:
             is_index = q_lower.index('what is')+ len('what is')
             sub = query[is_index:].strip()
@@ -50,13 +52,33 @@ def Decider(query,q_lower):
         sub = query[about_index:].strip()
         Wikisearch(sub)
     elif 'whatsapp' in q_lower:
-        voice.say("Opening Whatsapp...")
+        # voice.say("Opening Whatsapp...")
+        Speak("Opening Whatsapp...")
         open('whatsapp')
     elif 'youtube' in q_lower:
-        voice.say("Opening Youtube...")
+        # voice.say("Opening Youtube...")
+        Speak("Opening Youtube...")
         url = "https://www.youtube.com/"
         webbrowser.open(url)
-    
-    
+    elif 'news' in q_lower:
+        ReadNews()
+        
+
+
+def ReadNews():
+    Speak("Reading news...")
+    url = "https://www.indiatoday.in/top-stories"
+    response = requests.get(url)
+    # print("response received")
+    soup = BeautifulSoup(response.text, 'html.parser') 
+    headlines = soup.find('body').find_all('h2') 
+    g = 0
+    for x in headlines:
+        out = x.text.strip()
+        print(out)
+        Speak(out)
+        g+=1
+        if g==5:
+            break
     
 takeCommand()
